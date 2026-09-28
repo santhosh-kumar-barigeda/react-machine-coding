@@ -19,23 +19,55 @@ const tabs: TabItem[] = [
   {
     id: 'overview',
     label: 'Overview',
-    content: <div>Overview content</div>,
+    content: (
+      <div className="flex flex-col gap-3">
+        <h3 className="text-lg font-semibold text-zinc-100">
+          Welcome to the Overview
+        </h3>
+        <p className="text-sm leading-relaxed text-zinc-400">
+          This is the overview tab. It provides a high-level summary of your
+          dashboard with key metrics and recent activity.
+        </p>
+      </div>
+    ),
   },
   {
     id: 'profile',
     label: 'Profile',
-    content: <div>Profile content</div>,
+    content: (
+      <div className="flex flex-col gap-3">
+        <h3 className="text-lg font-semibold text-zinc-100">Your Profile</h3>
+        <p className="text-sm leading-relaxed text-zinc-400">
+          Manage your personal information, avatar, and display preferences from
+          this section.
+        </p>
+      </div>
+    ),
   },
   {
     id: 'settings',
     label: 'Settings',
-    content: <div>Settings content</div>,
+    content: (
+      <div className="flex flex-col gap-3">
+        <h3 className="text-lg font-semibold text-zinc-100">Settings</h3>
+        <p className="text-sm leading-relaxed text-zinc-400">
+          Configure application preferences, notifications, and privacy
+          settings.
+        </p>
+      </div>
+    ),
   },
   {
     id: 'billing',
     label: 'Billing',
-    content: <div>Billing content</div>,
-    disabled: true,
+    content: (
+      <div className="flex flex-col gap-3">
+        <h3 className="text-lg font-semibold text-zinc-100">Billing</h3>
+        <p className="text-sm leading-relaxed text-zinc-400">
+          View invoices, manage payment methods, and update your subscription.
+        </p>
+      </div>
+    ),
   },
 ]
 
@@ -43,12 +75,14 @@ export function TabsPlayArea() {
   const [activeTab, setActiveTab] = useState('overview')
 
   return (
-    <Tabs
-      tabs={tabs}
-      activeTab={activeTab}
-      onChange={setActiveTab}
-      orientation="vertical"
-    />
+    <div className="w-full max-w-xl rounded-2xl border border-zinc-800 bg-zinc-900/80 p-1 shadow-2xl shadow-violet-500/5 backdrop-blur-sm">
+      <Tabs
+        tabs={tabs}
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        orientation="horizontal"
+      />
+    </div>
   )
 }
 
@@ -181,21 +215,18 @@ export function Tabs({
     return null
   }
 
+  const isVertical = orientation === 'vertical'
+
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: orientation === 'vertical' ? 'row' : 'column',
-        width: '100%',
-      }}
-    >
+    <div className={`flex w-full ${isVertical ? 'flex-row' : 'flex-col'}`}>
       <div
         role="tablist"
         aria-orientation={orientation}
-        style={{
-          display: 'flex',
-          flexDirection: orientation === 'vertical' ? 'column' : 'row',
-        }}
+        className={`flex ${
+          isVertical
+            ? 'flex-col gap-1 border-r border-zinc-800 p-2'
+            : 'gap-1 border-b border-zinc-800 p-2'
+        }`}
       >
         {tabs.map((tab) => {
           const isActive = tab.id === currentActiveTab
@@ -215,22 +246,13 @@ export function Tabs({
               tabIndex={isActive ? 0 : -1}
               onClick={() => selectTab(tab.id)}
               onKeyDown={(event) => handleKeyDown(event, tab.id)}
-              style={{
-                padding: '10px 16px',
-                border: 'none',
-                borderBottom:
-                  orientation === 'horizontal'
-                    ? `2px solid ${isActive ? 'green' : 'transparent'}`
-                    : 'none',
-                borderRight:
-                  orientation === 'vertical'
-                    ? `2px solid ${isActive ? 'green' : 'transparent'}`
-                    : 'none',
-                background: 'transparent',
-                color: 'inherit',
-                cursor: tab.disabled ? 'not-allowed' : 'pointer',
-                opacity: tab.disabled ? 0.5 : 1,
-              }}
+              className={`cursor-pointer rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                tab.disabled
+                  ? 'cursor-not-allowed text-zinc-600 opacity-40'
+                  : isActive
+                    ? 'bg-violet-600/20 text-violet-300 shadow-sm'
+                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+              }`}
             >
               {tab.label}
             </button>
@@ -244,10 +266,7 @@ export function Tabs({
           role="tabpanel"
           aria-labelledby={`tab-${currentActiveTab}`}
           tabIndex={0}
-          style={{
-            padding: '16px',
-            flex: 1,
-          }}
+          className="flex-1 p-5 outline-none"
         >
           {activeTabContent}
         </div>

@@ -29,17 +29,21 @@ export function Stopwatch({ autoStart = false, onLap }: StopwatchProps) {
     }
   }, [])
 
-  const updateTime = useCallback(() => {
-    if (startTimeRef.current === null) {
-      return
+  const startAnimation = useCallback(() => {
+    const tick = () => {
+      if (startTimeRef.current === null) {
+        return
+      }
+
+      const currentTime =
+        elapsedBeforeStartRef.current + (Date.now() - startTimeRef.current)
+
+      setElapsed(currentTime)
+
+      animationFrameRef.current = requestAnimationFrame(tick)
     }
 
-    const currentTime =
-      elapsedBeforeStartRef.current + (Date.now() - startTimeRef.current)
-
-    setElapsed(currentTime)
-
-    animationFrameRef.current = requestAnimationFrame(updateTime)
+    animationFrameRef.current = requestAnimationFrame(tick)
   }, [])
 
   const start = useCallback(() => {
@@ -51,8 +55,8 @@ export function Stopwatch({ autoStart = false, onLap }: StopwatchProps) {
 
     setIsRunning(true)
 
-    animationFrameRef.current = requestAnimationFrame(updateTime)
-  }, [updateTime])
+    startAnimation()
+  }, [startAnimation])
 
   const pause = useCallback(() => {
     if (startTimeRef.current === null) {
@@ -119,87 +123,77 @@ export function Stopwatch({ autoStart = false, onLap }: StopwatchProps) {
   }, [autoStart, start, cancelAnimation])
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '20px',
-        width: '100%',
-        maxWidth: '500px',
-      }}
-    >
-      <div
-        style={{
-          fontSize: '48px',
-          fontVariantNumeric: 'tabular-nums',
-          textAlign: 'center',
-        }}
-      >
-        {formatTime(elapsed)}
+    <div className="flex w-full max-w-md flex-col items-center gap-8 rounded-2xl border border-zinc-800 bg-zinc-900/80 p-8 shadow-2xl shadow-violet-500/5 backdrop-blur-sm">
+      {/* Timer display */}
+      <div className="relative">
+        <div className="absolute -inset-4 rounded-full bg-violet-500/10 blur-2xl" />
+
+        <div className="relative font-mono text-5xl font-light tracking-wider text-zinc-100 tabular-nums">
+          {formatTime(elapsed)}
+        </div>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '8px',
-        }}
-      >
-        <button type="button" onClick={start} disabled={isRunning}>
+      {/* Controls */}
+      <div className="flex flex-wrap justify-center gap-3">
+        <StopwatchButton onClick={start} disabled={isRunning} variant="primary">
           Start
-        </button>
+        </StopwatchButton>
 
-        <button type="button" onClick={pause} disabled={!isRunning}>
+        <StopwatchButton
+          onClick={pause}
+          disabled={!isRunning}
+          variant="warning"
+        >
           Pause
-        </button>
+        </StopwatchButton>
 
-        <button
-          type="button"
+        <StopwatchButton
           onClick={start}
           disabled={isRunning || elapsed === 0}
+          variant="success"
         >
           Resume
-        </button>
+        </StopwatchButton>
 
-        <button type="button" onClick={recordLap} disabled={!isRunning}>
+        <StopwatchButton
+          onClick={recordLap}
+          disabled={!isRunning}
+          variant="default"
+        >
           Lap
-        </button>
+        </StopwatchButton>
 
-        <button
-          type="button"
+        <StopwatchButton
           onClick={reset}
           disabled={elapsed === 0 && laps.length === 0}
+          variant="danger"
         >
           Reset
-        </button>
+        </StopwatchButton>
       </div>
 
+      {/* Laps */}
       {laps.length > 0 && (
-        <div>
-          <h3>Laps</h3>
+        <div className="w-full">
+          <h3 className="mb-3 text-xs font-semibold tracking-widest text-zinc-500 uppercase">
+            Laps
+          </h3>
 
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-            }}
-          >
+          <div className="flex max-h-52 flex-col gap-1 overflow-y-auto pr-1">
             {laps.map((lap) => (
               <div
                 key={lap.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  padding: '8px',
-                  borderBottom: '1px solid #ddd',
-                }}
+                className="flex items-center justify-between rounded-lg bg-zinc-800/60 px-4 py-2.5 text-sm transition-colors hover:bg-zinc-800"
               >
-                <span>Lap {lap.id}</span>
+                <span className="font-medium text-zinc-400">Lap {lap.id}</span>
 
-                <span>Total: {formatTime(lap.totalTime)}</span>
+                <span className="font-mono text-zinc-300 tabular-nums">
+                  {formatTime(lap.totalTime)}
+                </span>
 
-                <span>Lap: {formatTime(lap.lapTime)}</span>
+                <span className="font-mono text-violet-400 tabular-nums">
+                  {formatTime(lap.lapTime)}
+                </span>
               </div>
             ))}
           </div>
@@ -207,6 +201,46 @@ export function Stopwatch({ autoStart = false, onLap }: StopwatchProps) {
       )}
     </div>
   )
+}
+
+function StopwatchButton({
+  onClick,
+  disabled,
+  variant,
+  children,
+}: {
+  onClick: () => void
+  disabled: boolean
+  variant: 'primary' | 'success' | 'warning' | 'danger' | 'default'
+  children: React.ReactNode
+}) {
+  const variants = {
+    primary:
+      'bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-500/20',
+    success:
+      'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20',
+    warning:
+      'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-500/20',
+    danger:
+      'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-500/20',
+    default:
+      'bg-zinc-700 hover:bg-zinc-600 text-zinc-200 shadow-lg shadow-zinc-900/40',
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`cursor-pointer rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-30 disabled:shadow-none ${variants[variant]}`}
+    >
+      {children}
+    </button>
+  )
+}
+
+export function StopwatchPlayArea() {
+  return <Stopwatch />
 }
 
 function formatTime(milliseconds: number) {

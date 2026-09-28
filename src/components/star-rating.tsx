@@ -13,14 +13,16 @@ export function StarRatingPlayArea() {
   const [rating, setRating] = useState<number | null>(null)
 
   return (
-    <StarRating
-      value={rating}
-      maxRating={5}
-      onChange={setRating}
-      readOnly={false}
-      size={48}
-      color="gold"
-    />
+    <div className="flex flex-col items-center gap-6 rounded-2xl border border-zinc-800 bg-zinc-900/80 p-10 shadow-2xl shadow-amber-500/5 backdrop-blur-sm">
+      <StarRating
+        value={rating}
+        maxRating={5}
+        onChange={setRating}
+        readOnly={false}
+        size={52}
+        color="#fbbf24"
+      />
+    </div>
   )
 }
 
@@ -30,7 +32,7 @@ export function StarRating({
   onChange,
   readOnly = false,
   size = 32,
-  color = 'gold',
+  color = '#fbbf24',
 }: StarRatingProps) {
   const [hoverValue, setHoverValue] = useState<number | null>(null)
 
@@ -95,22 +97,11 @@ export function StarRating({
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '6px',
-      }}
-    >
+    <div className="flex flex-col items-center gap-4">
       <div
         role="radiogroup"
         aria-label="Star rating"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '2px',
-        }}
+        className="flex items-center gap-1"
       >
         {Array.from({ length: maxRating }).map((_, starIndex) => {
           const fill = getStarFill(starIndex)
@@ -139,38 +130,27 @@ export function StarRating({
                 }
               }}
               onKeyDown={(event) => handleKeyDown(event, starIndex)}
+              className="group relative cursor-pointer border-none bg-transparent p-0 transition-transform duration-150 hover:scale-110 disabled:cursor-default disabled:hover:scale-100"
               style={{
-                position: 'relative',
                 width: size,
                 height: size,
-                padding: 0,
-                border: 'none',
-                background: 'transparent',
-                cursor: readOnly ? 'default' : 'pointer',
                 fontSize: size,
                 lineHeight: 1,
               }}
             >
               {/* Empty star */}
-              <span
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  color: '#ccc',
-                }}
-              >
+              <span className="absolute inset-0" style={{ color: '#3f3f46' }}>
                 ★
               </span>
 
               {/* Filled / half-filled star */}
               <span
+                className="absolute inset-0 overflow-hidden whitespace-nowrap transition-[width] duration-150"
                 style={{
-                  position: 'absolute',
-                  inset: 0,
                   color,
                   width: fill,
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap',
+                  filter:
+                    fill !== '0%' ? `drop-shadow(0 0 6px ${color}40)` : 'none',
                 }}
               >
                 ★
@@ -180,16 +160,26 @@ export function StarRating({
         })}
       </div>
 
-      <p
-        style={{
-          margin: 0,
-          color: 'white',
-          fontSize: '24px',
-          fontWeight: 'bold',
-        }}
-      >
-        Rating: {value ?? 0}/{maxRating}
-      </p>
+      <div className="flex flex-col items-center gap-1">
+        <p className="m-0 text-2xl font-bold text-zinc-100">
+          {value ?? 0}
+          <span className="text-lg font-normal text-zinc-500">
+            /{maxRating}
+          </span>
+        </p>
+
+        <p className="m-0 text-xs text-zinc-500">
+          {value === null
+            ? 'Click to rate'
+            : value >= maxRating
+              ? 'Perfect!'
+              : value >= maxRating * 0.7
+                ? 'Great!'
+                : value >= maxRating * 0.4
+                  ? 'Good'
+                  : 'Could be better'}
+        </p>
+      </div>
     </div>
   )
 }

@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -145,23 +139,16 @@ export function InfiniteScroll<T>({
     }
   }, [fetchMore, threshold, height])
 
-  // Auto-load initial batch (when no initialItems or when content doesn't fill container)
-  useEffect(() => {
-    if (items.length === 0 && hasMore) {
-      fetchMore()
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const containerStyle: React.CSSProperties | undefined =
-    height != null
-      ? {
-          height: `${height}px`,
-          overflowY: 'auto',
-        }
-      : undefined
-
   return (
-    <div ref={scrollContainerRef} style={containerStyle}>
+    <div
+      ref={scrollContainerRef}
+      className="scrollbar-thin"
+      style={
+        height != null
+          ? { height: `${height}px`, overflowY: 'auto' }
+          : undefined
+      }
+    >
       {items.map((item, index) => {
         const key = keyExtractor ? keyExtractor(item, index) : index
 
@@ -169,50 +156,29 @@ export function InfiniteScroll<T>({
       })}
 
       {/* Sentinel element observed by IntersectionObserver */}
-      {hasMore && <div ref={sentinelRef} style={{ height: '1px' }} />}
+      {hasMore && <div ref={sentinelRef} className="h-px" />}
 
       {/* Loading indicator */}
       {isLoading && (
         <div
           role="status"
           aria-live="polite"
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            padding: '16px',
-            color: '#a1a1aa',
-          }}
+          className="flex items-center justify-center gap-2 py-6 text-sm text-zinc-500"
         >
+          <LoadingSpinner />
           Loading...
         </div>
       )}
 
       {/* Error state with retry */}
       {error && !isLoading && (
-        <div
-          role="alert"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '16px',
-            color: '#ef4444',
-          }}
-        >
-          <span>{error.message}</span>
+        <div role="alert" className="flex flex-col items-center gap-3 py-6">
+          <span className="text-sm text-red-400">{error.message}</span>
 
           <button
             type="button"
             onClick={fetchMore}
-            style={{
-              padding: '6px 16px',
-              borderRadius: '6px',
-              border: '1px solid #ef4444',
-              color: '#ef4444',
-              background: 'transparent',
-              cursor: 'pointer',
-            }}
+            className="cursor-pointer rounded-lg border border-red-500/40 bg-red-500/10 px-5 py-2 text-sm font-semibold text-red-400 transition-all duration-200 hover:border-red-500/60 hover:bg-red-500/20"
           >
             Retry
           </button>
@@ -224,17 +190,37 @@ export function InfiniteScroll<T>({
         <div
           role="status"
           aria-live="polite"
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            padding: '16px',
-            color: '#71717a',
-          }}
+          className="py-6 text-center text-sm text-zinc-600"
         >
-          No more items
+          — No more items —
         </div>
       )}
     </div>
+  )
+}
+
+function LoadingSpinner() {
+  return (
+    <svg
+      className="h-4 w-4 animate-spin text-violet-400"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+      />
+    </svg>
   )
 }
 
@@ -284,31 +270,16 @@ export function InfiniteScrollPlayArea() {
   }, [])
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        width: '100%',
-      }}
-    >
-      <h1
-        style={{
-          fontSize: '24px',
-          fontWeight: 700,
-          padding: '16px',
-          textAlign: 'center',
-          flexShrink: 0,
-        }}
-      >
+    <div className="flex h-screen w-full flex-col">
+      <h1 className="shrink-0 py-5 text-center text-xl font-bold tracking-wide text-zinc-100">
         Infinite Scroll
       </h1>
 
-      <div style={{ flex: 1, minHeight: 0 }}>
+      <div className="mx-auto w-full max-w-xl flex-1 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/80 shadow-2xl shadow-violet-500/5 backdrop-blur-sm">
         <InfiniteScroll<FakeUser>
           loadMore={loadMore}
           threshold="300px"
-          height={600}
+          height={560}
           renderItem={(user) => <UserCard user={user} />}
           keyExtractor={(user) => user.id}
         />
@@ -319,32 +290,17 @@ export function InfiniteScrollPlayArea() {
 
 function UserCard({ user }: { user: FakeUser }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '12px 16px',
-        borderBottom: '1px solid #27272a',
-      }}
-    >
+    <div className="flex items-center gap-3 border-b border-zinc-800/60 px-5 py-3.5 transition-colors duration-150 hover:bg-white/[0.03]">
       <img
         src={user.avatar}
         alt={user.name}
-        style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '50%',
-          background: '#3f3f46',
-        }}
+        className="h-10 w-10 rounded-full bg-zinc-800 ring-1 ring-zinc-700/50"
       />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-        <span style={{ fontWeight: 600 }}>{user.name}</span>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-sm font-semibold text-zinc-200">{user.name}</span>
 
-        <span style={{ fontSize: '14px', color: '#a1a1aa' }}>
-          {user.email}
-        </span>
+        <span className="text-xs text-zinc-500">{user.email}</span>
       </div>
     </div>
   )

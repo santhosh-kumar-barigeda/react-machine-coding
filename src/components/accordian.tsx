@@ -17,7 +17,7 @@ interface AccordionProps {
   defaultOpen?: string[]
 }
 
-export const items: AccordionItem[] = [
+const items: AccordionItem[] = [
   {
     id: '1',
     title: 'Frontend',
@@ -195,12 +195,14 @@ export function AccordionPlayArea() {
   const [openItems, setOpenItems] = useState<string[]>([])
 
   return (
-    <Accordion
-      items={items}
-      openItems={openItems}
-      onChange={setOpenItems}
-      allowMultiple={false}
-    />
+    <div className="w-full max-w-xl rounded-2xl border border-zinc-800 bg-zinc-900/80 p-6 shadow-2xl shadow-violet-500/5 backdrop-blur-sm">
+      <Accordion
+        items={items}
+        openItems={openItems}
+        onChange={setOpenItems}
+        allowMultiple={false}
+      />
+    </div>
   )
 }
 
@@ -251,14 +253,7 @@ export function Accordion({
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-        width: '100%',
-      }}
-    >
+    <div className="flex w-full flex-col gap-2">
       {items.map((item) => (
         <AccordionItemView
           key={item.id}
@@ -293,11 +288,11 @@ function AccordionItemView({
 
   return (
     <div
-      style={{
-        border: '1px solid #e5e7eb',
-        borderRadius: '10px',
-        overflow: 'hidden',
-      }}
+      className={`overflow-hidden rounded-xl border transition-colors duration-200 ${
+        isOpen
+          ? 'border-violet-500/30 bg-violet-500/5'
+          : 'border-zinc-800 bg-zinc-800/30'
+      }`}
     >
       <button
         ref={buttonRef}
@@ -307,58 +302,43 @@ function AccordionItemView({
         aria-controls={`accordion-content-${item.id}`}
         aria-disabled={item.disabled}
         onClick={onToggle}
-        style={{
-          width: '100%',
-          padding: '12px 16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          border: 'none',
-          background: 'transparent',
-          color: 'inherit',
-          cursor: item.disabled ? 'not-allowed' : 'pointer',
-          opacity: item.disabled ? 0.5 : 1,
-          textAlign: 'left',
-        }}
+        className={`flex w-full cursor-pointer items-center justify-between px-4 py-3 text-left text-sm font-medium transition-colors duration-200 ${
+          item.disabled ? 'cursor-not-allowed opacity-40' : 'hover:bg-white/5'
+        } ${isOpen ? 'text-violet-300' : 'text-zinc-200'}`}
       >
         <span>{item.title}</span>
 
-        <span aria-hidden="true">{isOpen ? '−' : '+'}</span>
+        <span
+          aria-hidden="true"
+          className={`text-xs text-zinc-500 transition-transform duration-300 ${
+            isOpen ? 'rotate-180' : 'rotate-0'
+          }`}
+        >
+          ▼
+        </span>
       </button>
 
       <div
         id={`accordion-content-${item.id}`}
         role="region"
         aria-labelledby={`accordion-trigger-${item.id}`}
+        className="grid transition-[grid-template-rows] duration-300 ease-in-out"
         style={{
-          display: 'grid',
           gridTemplateRows: isOpen ? '1fr' : '0fr',
-          transition: 'grid-template-rows 200ms ease',
         }}
       >
-        <div
-          style={{
-            minHeight: 0,
-            overflow: 'hidden',
-          }}
-        >
+        <div className="min-h-0 overflow-hidden">
           <div
-            style={{
-              padding: isOpen ? '12px 16px' : '0 16px',
-              borderTop: isOpen ? '1px solid #e5e7eb' : 'none',
-              transition: 'padding 200ms ease',
-            }}
+            className={`px-4 transition-[padding] duration-300 ${
+              isOpen ? 'pt-1 pb-4' : 'py-0'
+            }`}
           >
-            <div>{item.content}</div>
+            <p className="text-sm leading-relaxed text-zinc-400">
+              {item.content}
+            </p>
 
             {item.children && item.children.length > 0 && (
-              <div
-                style={{
-                  marginTop: '12px',
-                  marginLeft: '8px',
-                  paddingLeft: '12px',
-                }}
-              >
+              <div className="mt-3 border-l-2 border-zinc-700/50 pl-4">
                 <Accordion
                   items={item.children}
                   allowMultiple={allowMultiple}
